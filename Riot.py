@@ -1,8 +1,9 @@
 import requests
 import cv2
-import numpy as np
+import pyautogui
+import keyboard
 
-ApiKey = "RGAPI-75946a3e-2f2b-42aa-bc8f-4772ab2dda7d"
+ApiKey = "RGAPI-6ae74583-ba1b-4e8b-a650-46bcbfffdb80"
 header = {"X-Riot-Token": ApiKey}
 DeathPosition = []
 GameColor = []
@@ -42,10 +43,10 @@ def PlayerSearch(name, tag):
         DataCode = data['puuid']
 
         return DataCode
-    else
+    else:
         return 400
 
-def GameMatch(GameType,Count)
+def GameMatch(DataCode, GameType, Count):
     #인게임 검색
     GameSearch = MatchSearch(DataCode, GameType, Count)
     if GameSearch.status_code == 200:
@@ -55,23 +56,40 @@ def GameMatch(GameType,Count)
         return 400
     
 while True:
-    PlayerName = input("닉네임 검색")
+    PlayerName = input("닉네임 검색\n > ")
     if '#' in PlayerName:
         Name = PlayerName.split('#')
         _Number = PlayerSearch(Name[0], Name[1])
         if _Number != 400:
-            GameType = input("1. 랭크\n2. 일반\n3. 자유랭\n > ")
-            GameCount = input("최대 100까지\n > ")
-            
+            break
         else:
             ("닉네임이 잘못되었습니다.")
     else:
         print("닉네임과 태그가 잘못 입력되었습니다.")
-    
+        
+while True:
+    GameType = input("1. 랭크\n2. 일반\n > ")
+    GameCount = input("최대 100까지\n > ")
+    if GameType == '1' or GameType == '랭크':
+        A = 'ranked'
+    elif GameType == '2' or GameType == '일반':
+        A = 'normal'
+    GameData = GameMatch(_Number, 'ranked', GameCount)
+    if GameData != 400:
+        break
+    else:
+        print("다시 입력해주세요.")
+
+
 #타임라인
-deathmap = []
-killmap = []
+KillmapInfo = []
+DeathmapInfo = []
 for i in GameData:
+    imsi = []
+    killmap = []
+    deathmap = []
+    killtimestamp = []
+    deathtimestamp = []
     location = 0
     print('-----------------------------------')
     print(i)
@@ -82,7 +100,7 @@ for i in GameData:
         _InGameParti = _InGameMetadata['participants']
         for j in _InGameParti:
             location += 1
-            if j == DataCode:
+            if j == _Number:
                 break
         
         _InGameData = InGameData['info']
@@ -94,16 +112,26 @@ for i in GameData:
                 if 'victimId' in k:
                     if k['victimId'] == location:
                         deathmap.append(k['position'])
+                        deathmap.append(k['timestamp'])
+                        deathtimestamp.append(list(deathmap))
+                        DeathmapInfo.append(list(deathtimestamp))
+                        deathtimestamp.clear()
                     if k['killerId'] == location:
                         killmap.append(k['position'])
+                        killmap.append(k['timestamp'])
+                        killtimestamp.append(list(killmap))
+                        print(killtimestamp)
+                        KillmapInfo.append(list(killtimestamp))
+                        killtimestamp.clear()
 
-                        
-
+'''
+for Days in KillmapInfo:
+    for i in Days:
+        print(i)
+    '''
 image = cv2.imread('C:/Users/c404/Desktop/sangjin/python/minimap.png')
 killImage = image.copy()
 deathImage = image.copy()
-#670 669 3
-#나누기 22 하면 될듯
 for i in killmap:
     x = i['x'] / 24.39 + 34
     y = i['y'] / 24.39 + 42
@@ -118,5 +146,5 @@ cv2.imshow("kill", killImage)
 cv2.imshow("death", deathImage)
 cv2.waitKey()
 cv2.destroyAllWindows()
-                        
+                      
 
