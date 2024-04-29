@@ -1,9 +1,8 @@
 import requests
 import cv2
-import pyautogui
 import keyboard
 
-ApiKey = "RGAPI-6ae74583-ba1b-4e8b-a650-46bcbfffdb80"
+ApiKey = "RGAPI-c16df5a5-7eb4-408d-9b59-bee6b1c520de"
 header = {"X-Riot-Token": ApiKey}
 DeathPosition = []
 GameColor = []
@@ -82,14 +81,13 @@ while True:
 
 
 #타임라인
-KillmapInfo = []
-DeathmapInfo = []
+TotalScore = []
 for i in GameData:
-    imsi = []
-    killmap = []
-    deathmap = []
-    killtimestamp = []
-    deathtimestamp = []
+    Total = {}
+    kill = []
+    death = []
+    killtime = []
+    deathtime = []
     location = 0
     print('-----------------------------------')
     print(i)
@@ -111,27 +109,77 @@ for i in GameData:
             for k in DataEvent:
                 if 'victimId' in k:
                     if k['victimId'] == location:
-                        deathmap.append(k['position'])
-                        deathmap.append(k['timestamp'])
-                        deathtimestamp.append(list(deathmap))
-                        DeathmapInfo.append(list(deathtimestamp))
-                        deathtimestamp.clear()
+                        # 리스트에 넣기
+                        death.append(k['position'])
+                        death.append(k['timestamp'])
+                        deathtime.append(list(death))
+                        death.clear()
                     if k['killerId'] == location:
-                        killmap.append(k['position'])
-                        killmap.append(k['timestamp'])
-                        killtimestamp.append(list(killmap))
-                        print(killtimestamp)
-                        KillmapInfo.append(list(killtimestamp))
-                        killtimestamp.clear()
+                        kill.append(k['position'])
+                        kill.append(k['timestamp'])
+                        killtime.append(list(kill))
+                        kill.clear()
+    Total['kill'] = killtime
+    Total['death'] = deathtime
+    Total['gamecode'] = i
+    TotalScore.append(dict(Total))
 
+for Data in TotalScore:
+    print("kill")
+    for i in Data["kill"]:
+        for A in i:
+            if dict == type(A):
+                if "x" in A:
+                    print(A["x"])
+                if "y" in A:
+                    print(A["y"])
+            else:
+                print(A)
+    print()
+    
+    print("death")
+    for i in Data["death"]:
+        for A in i:
+            if dict == type(A):
+                if "x" in A:
+                    print(A["x"])
+                if "y" in A:
+                    print(A["y"])
+            else:
+                print(A)
+    print()
+    if "gamecode" in Data:
+        print(Data["gamecode"])
+
+image = cv2.imread('C:/Users/home/Desktop/riotapi-main/riotapi-main/minimap.png')
+while True:
+    State = "change"
+    KillMap = cv2.copy(image)
+    DeathMap = cv2.copy(image)
+
+    
+    Map = cv2.resize(image, dsize = (15000,15000), interpolation = cv2.INTER_AREA)
+
+    for Data in TotalScore:
+        for Info in Data["kill"]:
+            for i in Info:
+                if dict == type(i):
+                    if "x" in i:
+                        x = i["x"]
+                    if "y" in i:
+                        y = i["y"]
+                    cv2.line(KillMap, (int(x), int(y)), (int(x), int(y)), (0,255,0), 100)
+        for Info in Data["kill"]:
+            for i in Info:
+                if dict == type(i):
+                    if "x" in i:
+                        x = i["x"]
+                    if "y" in i:
+                        y = i["y"]
+                    cv2.line(DeathMap, (int(x), int(y)), (int(x), int(y)), (0,255,0), 100)
+                        
+    cv2.imshow("kill", Map)
 '''
-for Days in KillmapInfo:
-    for i in Days:
-        print(i)
-    '''
-image = cv2.imread('C:/Users/c404/Desktop/sangjin/python/minimap.png')
-killImage = image.copy()
-deathImage = image.copy()
 for i in killmap:
     x = i['x'] / 24.39 + 34
     y = i['y'] / 24.39 + 42
@@ -141,10 +189,22 @@ for i in deathmap:
     x = i['x'] / 24.39 + 34
     y = i['y'] / 24.39 + 42
     cv2.line(deathImage, (int(x), int(y)), (int(x), int(y)), (0,0,255), 3)
+'''
 
-cv2.imshow("kill", killImage)
-cv2.imshow("death", deathImage)
-cv2.waitKey()
-cv2.destroyAllWindows()
-                      
+    cv2.waitKey()
+    while True:
+        if keyboard.is_pressed("right"):
+            State = "right"
+        elif keyboard.is_pressed("left"):
+            State = "left"
+        elif keyboard.is_pressed("enter"): 
+            cv2.destroyAllWindows()
+            State = "close"
+            break
+    if State == "close":
+        break
+    elif State == "right":
+        
+    elif State == "left":
+        
 
