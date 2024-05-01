@@ -2,7 +2,7 @@ import requests
 import cv2
 import keyboard
 
-ApiKey = "RGAPI-c16df5a5-7eb4-408d-9b59-bee6b1c520de"
+ApiKey = "RGAPI-59131c3a-7bf5-48ec-a67e-cf454b4fc5dd"
 header = {"X-Riot-Token": ApiKey}
 DeathPosition = []
 GameColor = []
@@ -124,87 +124,98 @@ for i in GameData:
     Total['gamecode'] = i
     TotalScore.append(dict(Total))
 
-for Data in TotalScore:
-    print("kill")
-    for i in Data["kill"]:
-        for A in i:
-            if dict == type(A):
-                if "x" in A:
-                    print(A["x"])
-                if "y" in A:
-                    print(A["y"])
-            else:
-                print(A)
-    print()
-    
-    print("death")
-    for i in Data["death"]:
-        for A in i:
-            if dict == type(A):
-                if "x" in A:
-                    print(A["x"])
-                if "y" in A:
-                    print(A["y"])
-            else:
-                print(A)
-    print()
-    if "gamecode" in Data:
-        print(Data["gamecode"])
-
-image = cv2.imread('C:/Users/home/Desktop/riotapi-main/riotapi-main/minimap.png')
+image = cv2.imread('C:/Users/c404/Desktop/sangjin/riotapi-main/minimap.png')
+ImageCount = 0
+MapType = "kill"
 while True:
     State = "change"
-    KillMap = cv2.copy(image)
-    DeathMap = cv2.copy(image)
-
+    KillMap = cv2.resize(image, dsize = (15000,15000), interpolation = cv2.INTER_AREA)
+    DeathMap = cv2.resize(image, dsize = (15000,15000), interpolation = cv2.INTER_AREA)
     
-    Map = cv2.resize(image, dsize = (15000,15000), interpolation = cv2.INTER_AREA)
-
+    (h,w) = KillMap.shape[:2]
+    (cX, cY) = (w/2, h/2)
+    
+    (h,w) = DeathMap.shape[:2]
+    (cX, cY) = (w/2, h/2)
+    
+    M = cv2.getRotationMatrix2D((cX, cY),180,1.0)
+    KillMap = cv2.warpAffine(KillMap,M,(h,w))
+    DeathMap = cv2.warpAffine(DeathMap,M,(h,w))
+    
+    i = 0
     for Data in TotalScore:
-        for Info in Data["kill"]:
-            for i in Info:
-                if dict == type(i):
-                    if "x" in i:
-                        x = i["x"]
-                    if "y" in i:
-                        y = i["y"]
-                    cv2.line(KillMap, (int(x), int(y)), (int(x), int(y)), (0,255,0), 100)
-        for Info in Data["kill"]:
-            for i in Info:
-                if dict == type(i):
-                    if "x" in i:
-                        x = i["x"]
-                    if "y" in i:
-                        y = i["y"]
-                    cv2.line(DeathMap, (int(x), int(y)), (int(x), int(y)), (0,255,0), 100)
-                        
-    cv2.imshow("kill", Map)
-'''
-for i in killmap:
-    x = i['x'] / 24.39 + 34
-    y = i['y'] / 24.39 + 42
-    cv2.line(killImage, (int(x), int(y)), (int(x), int(y)), (0,255,0), 3)
-
-for i in deathmap:
-    x = i['x'] / 24.39 + 34
-    y = i['y'] / 24.39 + 42
-    cv2.line(deathImage, (int(x), int(y)), (int(x), int(y)), (0,0,255), 3)
-'''
+        if ImageCount == i:
+            for Info in Data["kill"]:
+                for i in Info:
+                    if dict == type(i):
+                        if "x" in i:
+                            x = i["x"]
+                        if "y" in i:
+                            y = i["y"]
+                        cv2.line(KillMap, (int(x), int(y)), (int(x), int(y)), (0,255,0), 100)
+            for Info in Data["death"]:
+                for i in Info:
+                    if dict == type(i):
+                        if "x" in i:
+                            x = i["x"]
+                        if "y" in i:
+                            y = i["y"]
+                        cv2.line(DeathMap, (int(x), int(y)), (int(x), int(y)), (255,0,0), 100)
+            break
+        i += 1
+    
+    M = cv2.getRotationMatrix2D((cX, cY),-180,1.0)
+    KillMap = cv2.warpAffine(KillMap,M,(h,w))
+    DeathMap = cv2.warpAffine(DeathMap,M,(h,w))
+    KillMap = cv2.resize(KillMap, dsize = (500,500), interpolation = cv2.INTER_AREA)
+    DeathMap = cv2.resize(DeathMap, dsize = (500,500), interpolation = cv2.INTER_AREA)
+    cv2.imshow(MapType, KillMap)
 
     cv2.waitKey()
     while True:
-        if keyboard.is_pressed("right"):
-            State = "right"
-        elif keyboard.is_pressed("left"):
-            State = "left"
-        elif keyboard.is_pressed("enter"): 
-            cv2.destroyAllWindows()
-            State = "close"
-            break
+        if State == "change":
+            if keyboard.is_pressed("right"):
+                State = "right"
+                break
+            elif keyboard.is_pressed("left"):
+                State = "left"
+                break
+            elif keyboard.is_pressed("up"):
+                State = "up"
+                break
+            elif keyboard.is_pressed("down"):
+                State = "down"
+                break
+            elif keyboard.is_pressed("enter"): 
+                State = "close"
+                break
+    
+    
     if State == "close":
+        #cv2.destroyAllWindows()
         break
     elif State == "right":
-        
+        #cv2.destroyAllWindows()
+        if ImageCount >= int(GameCount):
+            ImageCount = 0
+        else:
+            ImageCount += 1
     elif State == "left":
-        
+        #cv2.destroyAllWindows()
+        if ImageCount <= 0:
+            ImageCount = int(GameCount)
+        else:
+            ImageCount -= 1
+    elif State == "up":
+        #cv2.destroyAllWindows()
+        if (MapType == "kill"):
+            MapType = "death"
+        else:
+            MapType = "kill"
+    elif State == "down":
+        #cv2.destroyAllWindows()
+        if (MapType == "kill"):
+            MapType = "death"
+        else:
+            MapType = "kill"
 
