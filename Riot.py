@@ -175,47 +175,35 @@ while True:
     while True:
         if State == "change":
             if keyboard.is_pressed("right"):
-                State = "right"
+                if ImageCount >= int(GameCount):
+                    ImageCount = 0
+                else:
+                    ImageCount += 1
                 break
             elif keyboard.is_pressed("left"):
-                State = "left"
+                if ImageCount <= 0:
+                    ImageCount = int(GameCount)
+                else:
+                    ImageCount -= 1
                 break
             elif keyboard.is_pressed("up"):
-                State = "up"
+                if (MapType == "kill"):
+                    MapType = "death"
+                else:
+                    MapType = "kill"
                 break
             elif keyboard.is_pressed("down"):
-                State = "down"
+                if (MapType == "kill"):
+                    MapType = "death"
+                else:
+                    MapType = "kill"
                 break
             elif keyboard.is_pressed("enter"): 
                 State = "close"
+                cv2.destroyAllWindows()
                 break
     
     
     if State == "close":
-        #cv2.destroyAllWindows()
         break
-    elif State == "right":
-        #cv2.destroyAllWindows()
-        if ImageCount >= int(GameCount):
-            ImageCount = 0
-        else:
-            ImageCount += 1
-    elif State == "left":
-        #cv2.destroyAllWindows()
-        if ImageCount <= 0:
-            ImageCount = int(GameCount)
-        else:
-            ImageCount -= 1
-    elif State == "up":
-        #cv2.destroyAllWindows()
-        if (MapType == "kill"):
-            MapType = "death"
-        else:
-            MapType = "kill"
-    elif State == "down":
-        #cv2.destroyAllWindows()
-        if (MapType == "kill"):
-            MapType = "death"
-        else:
-            MapType = "kill"
 
